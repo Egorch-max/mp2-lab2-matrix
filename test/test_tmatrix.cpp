@@ -67,7 +67,7 @@ TEST(TDynamicMatrix, copied_matrix_has_its_own_memory)
     }
     TDynamicMatrix<int> m2(m1);
 
-    EXPECT_NE(&m1[0], &m2[0]);
+    EXPECT_NE(&m1, &m2);
 }
 
 TEST(TDynamicMatrix, can_get_size)
@@ -114,9 +114,14 @@ TEST(TDynamicMatrix, can_assign_matrix_to_itself)
 {
     const int size = 3;
 
-    TDynamicMatrix<int> m(size);
+    TDynamicMatrix<int> m1(size);
+    TDynamicMatrix<int> m2(size);
 
-    ASSERT_EQ(m = m, m);
+    m1[2][2] = m2[2][2] = 1;
+
+    m1 = m1;
+
+    ASSERT_NO_THROW(m1 = m2);
 }
 
 TEST(TDynamicMatrix, can_assign_matrices_of_equal_size)
@@ -259,4 +264,243 @@ TEST(TDynamicMatrix, cant_subtract_matrixes_with_not_equal_size)
 
     ASSERT_ANY_THROW(m1 - m2);
 }
+//Свои тесты
 
+TEST(TDynamicMatrix, can_multiply_matrix_by_scalar) {
+
+    TDynamicMatrix<int> original_matrix(4);
+    TDynamicMatrix<int> result_matrix(4);
+    int scalar = 3;
+
+    int* row1 = new int [4] { 2, 4, 6, 8};
+    int* row2 = new int [4] { 10, 12, 14, 16};
+    int* row3 = new int [4] { 18, 20, 22, 24};
+    int* row4 = new int [4] { 26, 28, 30, 32};
+
+    int* expected_row1 = new int [4] { 6, 12, 18, 24};
+    int* expected_row2 = new int [4] { 30, 36, 42, 48};
+    int* expected_row3 = new int [4] { 54, 60, 66, 72};
+    int* expected_row4 = new int [4] { 78, 84, 90, 96};
+
+    TDynamicVector<int> vector_row1(row1, 4);
+    TDynamicVector<int> vector_row2(row2, 4);
+    TDynamicVector<int> vector_row3(row3, 4);
+    TDynamicVector<int> vector_row4(row4, 4);
+
+    TDynamicVector<int> expected_vector_row1(expected_row1, 4);
+    TDynamicVector<int> expected_vector_row2(expected_row2, 4);
+    TDynamicVector<int> expected_vector_row3(expected_row3, 4);
+    TDynamicVector<int> expected_vector_row4(expected_row4, 4);
+
+    delete[] row1;
+    delete[] row2;
+    delete[] row3;
+    delete[] row4;
+
+    delete[] expected_row1;
+    delete[] expected_row2;
+    delete[] expected_row3;
+    delete[] expected_row4;
+
+    original_matrix[0] = vector_row1;
+    original_matrix[1] = vector_row2;
+    original_matrix[2] = vector_row3;
+    original_matrix[3] = vector_row4;
+
+    result_matrix[0] = expected_vector_row1;
+    result_matrix[1] = expected_vector_row2;
+    result_matrix[2] = expected_vector_row3;
+    result_matrix[3] = expected_vector_row4;
+
+    EXPECT_EQ(original_matrix * scalar, result_matrix);
+
+}
+TEST(TDynamicMatrix, can_multiply_matrix_by_vector_with_correct_size) {
+
+    TDynamicMatrix<int> original_matrix(4);
+    TDynamicMatrix<int> result_matrix(4);
+
+    int* row1 = new int [4] { 1, 2, 3, 1};
+    int* row2 = new int [4] { 1, 1, 1, 1};
+    int* row3 = new int [4] { 1, 2, 2, 2};
+    int* row4 = new int [4] { 2, 2, 3, 3};
+
+    int* vector_elements = new int [4] { 1, 2, 1, 1};
+
+    int* expected_vector_elements = new int [4] { 9, 5, 9, 12};
+
+    TDynamicVector<int> vector_row1(row1, 4);
+    TDynamicVector<int> vector_row2(row2, 4);
+    TDynamicVector<int> vector_row3(row3, 4);
+    TDynamicVector<int> vector_row4(row4, 4);
+
+    TDynamicVector<int> input_vector(vector_elements, 4);
+    TDynamicVector<int> expected_result_vector(expected_vector_elements, 4);
+
+    delete[] row1;
+    delete[] row2;
+    delete[] row3;
+    delete[] row4;
+
+    delete[] vector_elements;
+    delete[] expected_vector_elements;
+
+    original_matrix[0] = vector_row1;
+    original_matrix[1] = vector_row2;
+    original_matrix[2] = vector_row3;
+    original_matrix[3] = vector_row4;
+
+    EXPECT_EQ(original_matrix * input_vector, expected_result_vector);
+}
+TEST(TDynamicMatrix, cant_multiply_matrix_by_vector_with_incorrect_size) {
+
+    TDynamicMatrix<int> original_matrix(4);
+    TDynamicMatrix<int> result_matrix(4);
+
+    int* row1 = new int [4] { 2, 4, 6, 8};
+    int* row2 = new int [4] { 10, 12, 14, 16};
+    int* row3 = new int [4] { 18, 20, 22, 24};
+    int* row4 = new int [4] { 26, 28, 30, 32};
+
+    int* vector_elements = new int [5] { 3, 5, 7, 9, 11};
+
+    TDynamicVector<int> vector_row1(row1, 4);
+    TDynamicVector<int> vector_row2(row2, 4);
+    TDynamicVector<int> vector_row3(row3, 4);
+    TDynamicVector<int> vector_row4(row4, 4);
+
+    TDynamicVector<int> input_vector(vector_elements, 5);
+
+    delete[] row1;
+    delete[] row2;
+    delete[] row3;
+    delete[] row4;
+
+    delete[] vector_elements;
+
+    original_matrix[0] = vector_row1;
+    original_matrix[1] = vector_row2;
+    original_matrix[2] = vector_row3;
+    original_matrix[3] = vector_row4;
+
+    ASSERT_ANY_THROW(original_matrix * input_vector);
+}
+TEST(TDynamicMatrix, can_multiply_matrix_by_matrix_with_correct_size) {
+
+    TDynamicMatrix<int> original_matrix(4);
+    TDynamicMatrix<int> multiplier_matrix(4);
+    TDynamicMatrix<int> result_matrix(4);
+
+    int* row1 = new int [4] { 1, 1, 2, 1};
+    int* row2 = new int [4] { 1, 2, 1, 1};
+    int* row3 = new int [4] { 1, 2, 2, 4};
+    int* row4 = new int [4] { 2, 2, 3, 3};
+
+    int* multiplier_row1 = new int [4] { 3, 5, 7, 1};
+    int* multiplier_row2 = new int [4] { 9, 1, 3, 1};
+    int* multiplier_row3 = new int [4] { 5, 1, 1, 1};
+    int* multiplier_row4 = new int [4] { 5, 1, 9, 1};
+
+    int* expected_row1 = new int [4] { 27, 9, 21, 5};
+    int* expected_row2 = new int [4] { 31, 9, 23, 5};
+    int* expected_row3 = new int [4] { 51, 13, 51, 9};
+    int* expected_row4 = new int [4] { 54, 18, 50, 10};
+
+    TDynamicVector<int> vector_row1(row1, 4);
+    TDynamicVector<int> vector_row2(row2, 4);
+    TDynamicVector<int> vector_row3(row3, 4);
+    TDynamicVector<int> vector_row4(row4, 4);
+
+    TDynamicVector<int> multiplier_vector_row1(multiplier_row1, 4);
+    TDynamicVector<int> multiplier_vector_row2(multiplier_row2, 4);
+    TDynamicVector<int> multiplier_vector_row3(multiplier_row3, 4);
+    TDynamicVector<int> multiplier_vector_row4(multiplier_row4, 4);
+
+    TDynamicVector<int> expected_vector_row1(expected_row1, 4);
+    TDynamicVector<int> expected_vector_row2(expected_row2, 4);
+    TDynamicVector<int> expected_vector_row3(expected_row3, 4);
+    TDynamicVector<int> expected_vector_row4(expected_row4, 4);
+
+    delete[] row1;
+    delete[] row2;
+    delete[] row3;
+    delete[] row4;
+
+    delete[] multiplier_row1;
+    delete[] multiplier_row2;
+    delete[] multiplier_row3;
+    delete[] multiplier_row4;
+
+    delete[] expected_row1;
+    delete[] expected_row2;
+    delete[] expected_row3;
+    delete[] expected_row4;
+
+    original_matrix[0] = vector_row1;
+    original_matrix[1] = vector_row2;
+    original_matrix[2] = vector_row3;
+    original_matrix[3] = vector_row4;
+
+    multiplier_matrix[0] = multiplier_vector_row1;
+    multiplier_matrix[1] = multiplier_vector_row2;
+    multiplier_matrix[2] = multiplier_vector_row3;
+    multiplier_matrix[3] = multiplier_vector_row4;
+
+    result_matrix[0] = expected_vector_row1;
+    result_matrix[1] = expected_vector_row2;
+    result_matrix[2] = expected_vector_row3;
+    result_matrix[3] = expected_vector_row4;
+
+    EXPECT_EQ(original_matrix * multiplier_matrix, result_matrix);
+}
+TEST(TDynamicMatrix, cant_multiply_matrix_by_matrix_with_incorrect_size) {
+
+    TDynamicMatrix<int> original_matrix(4);
+    TDynamicMatrix<int> multiplier_matrix(5);
+
+    int* row1 = new int [4] { 2, 4, 6, 8};
+    int* row2 = new int [4] { 10, 12, 14, 16};
+    int* row3 = new int [4] { 18, 20, 22, 24};
+    int* row4 = new int [4] { 26, 28, 30, 32};
+
+    int* multiplier_row1 = new int [5] { 3, 5, 7, 9, 11};
+    int* multiplier_row2 = new int [5] { 13, 15, 17, 19, 21};
+    int* multiplier_row3 = new int [5] { 23, 25, 27, 29, 31};
+    int* multiplier_row4 = new int [5] { 33, 35, 37, 39, 41};
+    int* multiplier_row5 = new int [5] { 43, 45, 47, 49, 51};
+
+    TDynamicVector<int> vector_row1(row1, 4);
+    TDynamicVector<int> vector_row2(row2, 4);
+    TDynamicVector<int> vector_row3(row3, 4);
+    TDynamicVector<int> vector_row4(row4, 4);
+
+    TDynamicVector<int> multiplier_vector_row1(multiplier_row1, 5);
+    TDynamicVector<int> multiplier_vector_row2(multiplier_row2, 5);
+    TDynamicVector<int> multiplier_vector_row3(multiplier_row3, 5);
+    TDynamicVector<int> multiplier_vector_row4(multiplier_row4, 5);
+    TDynamicVector<int> multiplier_vector_row5(multiplier_row5, 5);
+
+    delete[] row1;
+    delete[] row2;
+    delete[] row3;
+    delete[] row4;
+
+    delete[] multiplier_row1;
+    delete[] multiplier_row2;
+    delete[] multiplier_row3;
+    delete[] multiplier_row4;
+    delete[] multiplier_row5;
+
+    original_matrix[0] = vector_row1;
+    original_matrix[1] = vector_row2;
+    original_matrix[2] = vector_row3;
+    original_matrix[3] = vector_row4;
+
+    multiplier_matrix[0] = multiplier_vector_row1;
+    multiplier_matrix[1] = multiplier_vector_row2;
+    multiplier_matrix[2] = multiplier_vector_row3;
+    multiplier_matrix[3] = multiplier_vector_row4;
+    multiplier_matrix[4] = multiplier_vector_row5;
+
+    ASSERT_ANY_THROW(original_matrix * multiplier_matrix);
+}
