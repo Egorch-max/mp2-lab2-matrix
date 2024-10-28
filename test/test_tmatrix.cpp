@@ -121,7 +121,7 @@ TEST(TDynamicMatrix, can_assign_matrix_to_itself)
 
     m1 = m1;
 
-    ASSERT_NO_THROW(m1 = m2);
+    ASSERT_EQ(m1, m2);
 }
 
 TEST(TDynamicMatrix, can_assign_matrices_of_equal_size)
