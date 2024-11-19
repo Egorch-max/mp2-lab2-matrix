@@ -1,126 +1,138 @@
 #include "tmatrix.h"
-
 #include <gtest.h>
 
-TEST(TDynamicVector, can_create_vector_with_positive_length)
+template <typename T>
+class TestTDynamicVector : public ::testing::Test
 {
-  ASSERT_NO_THROW(TDynamicVector<int> v(5));
+public:
+	TDynamicVector<T>* v, * v1, * v2;
+	void SetUp()
+	{
+		v = new TDynamicVector<T>(10);
+	}
+	void SetUp2(std::size_t n)
+	{
+		v = new TDynamicVector<T>(n);
+	}
+	void SetUp3()
+	{
+		T* a = new T[10]{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+		v1 = new TDynamicVector<T>(a, 10);
+
+		delete[] a;
+
+
+		v = new TDynamicVector<T>(*v1);
+
+
+		T* b = new T[10]{ 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+
+		v2 = new TDynamicVector<T>(b, 10);
+
+		delete[] b;
+
+	}
+	void TearDown()
+	{
+		delete v;
+	}
+	void TearDown3()
+	{
+		delete v1;
+		delete v2;
+	}
+};
+
+TYPED_TEST_CASE_P(TestTDynamicVector);
+
+TYPED_TEST_P(TestTDynamicVector, can_create_vector_with_positive_length)
+{
+	ASSERT_NO_THROW(this->SetUp2(10));
 }
 
-TEST(TDynamicVector, cant_create_too_large_vector)
+TYPED_TEST_P(TestTDynamicVector, cant_create_too_large_vector)
 {
-  ASSERT_ANY_THROW(TDynamicVector<int> v(MAX_VECTOR_SIZE + 1));
+	ASSERT_ANY_THROW(this->SetUp2(MAX_VECTOR_SIZE + 1));
 }
 
-TEST(TDynamicVector, throws_when_create_vector_with_negative_length)
+TYPED_TEST_P(TestTDynamicVector, throws_when_create_vector_with_negative_length)
 {
-  ASSERT_ANY_THROW(TDynamicVector<int> v(-5));
+	ASSERT_ANY_THROW(this->SetUp2(-5));
 }
 
-TEST(TDynamicVector, can_create_copied_vector)
+TYPED_TEST_P(TestTDynamicVector, can_create_copied_vector)
 {
-  TDynamicVector<int> v(10);
-
-  ASSERT_NO_THROW(TDynamicVector<int> v1(v));
+	ASSERT_NO_THROW(this->SetUp3());
 }
 
-TEST(TDynamicVector, copied_vector_is_equal_to_source_one)
+TYPED_TEST_P(TestTDynamicVector, copied_vector_is_equal_to_source_one)
 {
-    int* pmem0 = new int[5] {5, 1, 2, 5, 3};
+	this->SetUp3();
 
-    TDynamicVector<int> vec_0(pmem0, 5);
+	EXPECT_EQ(*(this->v), *(this->v1));
 
-    TDynamicVector<int> v_copy(vec_0);
-
-
-    delete[] pmem0;
-
-    EXPECT_EQ(vec_0, v_copy);
+	this->TearDown3();
 }
 
-TEST(TDynamicVector, copied_vector_has_its_own_memory)
+TYPED_TEST_P(TestTDynamicVector, copied_vector_has_its_own_memory)
 {
-	int* pmem0 = new int[5] {5, 1, 2, 5, 3};
+	this->SetUp3();
 
-	TDynamicVector<int> v(pmem0, 5);
-	TDynamicVector<int> v_copy(v);
+	EXPECT_NE(this->v, this->v1);
 
-	TDynamicVector<int>* V = &v;
-	TDynamicVector<int>* V_copy = &v_copy;
-
-	delete[] pmem0;
-
-	EXPECT_NE(V, V_copy);
+	this->TearDown3();
 }
 
-TEST(TDynamicVector, can_get_size)
+TYPED_TEST_P(TestTDynamicVector, can_get_size)
 {
-  TDynamicVector<int> v(4);
-
-  EXPECT_EQ(4, v.size());
+	EXPECT_EQ(10, this->v->size());
 }
 
-TEST(TDynamicVector, can_set_and_get_element)
+TYPED_TEST_P(TestTDynamicVector, can_set_and_get_element)
 {
-  TDynamicVector<int> v(4);
-  v[0] = 4;
+	this->v[0][0] = 4;
 
-  EXPECT_EQ(4, v[0]);
+	EXPECT_EQ(4, (this->v[0][0]));
 }
 
-TEST(TDynamicVector, throws_when_set_element_with_negative_index)
+TYPED_TEST_P(TestTDynamicVector, throws_when_set_element_with_negative_index)
 {
-	const int size = 3;
-
-	TDynamicVector<int> v1(size);
-
-	ASSERT_ANY_THROW(v1.at(-1));
+	ASSERT_ANY_THROW(this->v->at(-1) = 4);
 }
 
-TEST(TDynamicVector, throws_when_set_element_with_too_large_index)
+TYPED_TEST_P(TestTDynamicVector, throws_when_set_element_with_too_large_index)
 {
-	const int size = 3;
-
-	TDynamicVector<int> v1(size);
-
-	ASSERT_ANY_THROW(v1.at(100));
+	ASSERT_ANY_THROW(this->v->at(50) = 4);
 }
 
-TEST(TDynamicVector, can_assign_vector_to_itself)
+TYPED_TEST_P(TestTDynamicVector, can_assign_vector_to_itself)
 {
-	const int size = 3;
+	*(this->v) = *(this->v);
 
-	TDynamicVector<int> v1(size);
-
-	v1[0] = 5; 
-	v1[1] = 4; 
-	v1[2] = 3;
-
-	TDynamicVector<int> v2(size);
-
-	v2[0] = 5; 
-	v2[1] = 4; 
-	v2[2] = 3;
-
-	EXPECT_EQ(v1, v2);
+	EXPECT_EQ(*(this->v), *(this->v));
 }
 
-TEST(TDynamicVector, can_assign_vectors_of_equal_size)
+TYPED_TEST_P(TestTDynamicVector, can_assign_vectors_of_equal_size)
 {
-	const int size = 3;
+	this->SetUp3();
 
-	TDynamicVector<int> v1(size);
+	*(this->v) = *(this->v2);
 
-	v1[0] = 5;
-	v1[1] = 4; 
-	v1[2] = 3;
+	EXPECT_EQ(*(this->v), *(this->v2));
 
-	TDynamicVector<int> v2(size);
-
-	v2 = v1;
-
-	EXPECT_EQ(v1, v2);
+	this->TearDown3();
 }
+
+
+REGISTER_TYPED_TEST_CASE_P(TestTDynamicVector, can_create_vector_with_positive_length, cant_create_too_large_vector, throws_when_create_vector_with_negative_length,
+	can_create_copied_vector, copied_vector_is_equal_to_source_one, copied_vector_has_its_own_memory, can_get_size, can_set_and_get_element, throws_when_set_element_with_negative_index,
+	throws_when_set_element_with_too_large_index, can_assign_vector_to_itself, can_assign_vectors_of_equal_size);
+
+typedef::testing::Types<int, float, double, long, long long> VectorTypes;
+
+INSTANTIATE_TYPED_TEST_CASE_P(VectorTypesInstantiation, TestTDynamicVector, VectorTypes);
+
 
 TEST(TDynamicVector, assign_operator_change_vector_size)
 {
@@ -158,14 +170,14 @@ TEST(TDynamicVector, compare_equal_vectors_return_true)
 
 	TDynamicVector<int> v1(size);
 
-	v1[0] = 5; 
-	v1[1] = 4; 
+	v1[0] = 5;
+	v1[1] = 4;
 	v1[2] = 3;
 
 	TDynamicVector<int> v2(size);
 
-	v2[0] = 5; 
-	v2[1] = 4; 
+	v2[0] = 5;
+	v2[1] = 4;
 	v2[2] = 3;
 
 	ASSERT_EQ(v1 == v2, true);
@@ -177,8 +189,8 @@ TEST(TDynamicVector, compare_vector_with_itself_return_true)
 
 	TDynamicVector<int> v1(size);
 
-	v1[0] = 5; 
-	v1[1] = 4; 
+	v1[0] = 5;
+	v1[1] = 4;
 	v1[2] = 3;
 
 	ASSERT_EQ(v1 == v1, true);
@@ -190,15 +202,15 @@ TEST(TDynamicVector, vectors_with_different_size_are_not_equal)
 
 	TDynamicVector<int> v1(size);
 
-	v1[0] = 5; 
-	v1[1] = 4; 
+	v1[0] = 5;
+	v1[1] = 4;
 	v1[2] = 3;
 
 	TDynamicVector<int> v2(size + 2);
 
-	v2[0] = 1; 
-	v2[1] = 2; 
-	v2[2] = 3; 
+	v2[0] = 1;
+	v2[1] = 2;
+	v2[2] = 3;
 	v2[3] = 4;
 	v2[4] = 5;
 
@@ -211,8 +223,8 @@ TEST(TDynamicVector, can_add_scalar_to_vector)
 
 	TDynamicVector<int> v1(size);
 
-	v1[0] = 5; 
-	v1[1] = 4; 
+	v1[0] = 5;
+	v1[1] = 4;
 	v1[2] = 3;
 
 	TDynamicVector<int> res(size);
@@ -224,7 +236,7 @@ TEST(TDynamicVector, can_add_scalar_to_vector)
 	TDynamicVector<int> v2(size);
 
 	v2[0] = 10;
-	v2[1] = 9; 
+	v2[1] = 9;
 	v2[2] = 8;
 
 	ASSERT_EQ(res, v2);
@@ -237,7 +249,7 @@ TEST(TDynamicVector, can_subtract_scalar_from_vector)
 	TDynamicVector<int> v1(size);
 
 	v1[0] = 5;
-	v1[1] = 4; 
+	v1[1] = 4;
 	v1[2] = 3;
 
 
@@ -249,8 +261,8 @@ TEST(TDynamicVector, can_subtract_scalar_from_vector)
 
 	TDynamicVector<int> v2(size);
 
-	v2[0] = 3; 
-	v2[1] = 2; 
+	v2[0] = 3;
+	v2[1] = 2;
 	v2[2] = 1;
 
 	ASSERT_EQ(res, v2);
@@ -275,7 +287,7 @@ TEST(TDynamicVector, can_multiply_scalar_by_vector)
 	TDynamicVector<int> v2(size);
 
 	v2[0] = 10;
-	v2[1] = 8; 
+	v2[1] = 8;
 	v2[2] = 6;
 
 	ASSERT_EQ(res, v2);
@@ -288,7 +300,7 @@ TEST(TDynamicVector, can_add_vectors_with_equal_size)
 	TDynamicVector<int> v1(size);
 
 	v1[0] = 5;
-	v1[1] = 4; 
+	v1[1] = 4;
 	v1[2] = 3;
 
 	TDynamicVector<int> v2(size);
@@ -299,8 +311,8 @@ TEST(TDynamicVector, can_add_vectors_with_equal_size)
 
 	TDynamicVector<int> res(size);
 
-	res[0] = 6; 
-	res[1] = 6; 
+	res[0] = 6;
+	res[1] = 6;
 	res[2] = 6;
 
 	ASSERT_EQ(v1 + v2, res);
@@ -314,13 +326,13 @@ TEST(TDynamicVector, cant_add_vectors_with_not_equal_size)
 	TDynamicVector<int> v1(size);
 
 	v1[0] = 5;
-	v1[1] = 4; 
+	v1[1] = 4;
 	v1[2] = 3;
 
 	TDynamicVector<int> v2(size + 2);
 
-	v2[0] = 1; 
-	v2[1] = 2; 
+	v2[0] = 1;
+	v2[1] = 2;
 	v2[2] = 3;
 	v2[3] = 4;
 	v2[4] = 5;
@@ -335,7 +347,7 @@ TEST(TDynamicVector, can_subtract_vectors_with_equal_size)
 	TDynamicVector<int> v1(size);
 
 	v1[0] = 5;
-	v1[1] = 4; 
+	v1[1] = 4;
 	v1[2] = 3;
 
 	TDynamicVector<int> v2(size);
@@ -360,14 +372,14 @@ TEST(TDynamicVector, cant_subtract_vectors_with_not_equal_size)
 	TDynamicVector<int> v1(size);
 
 	v1[0] = 5;
-	v1[1] = 4; 
+	v1[1] = 4;
 	v1[2] = 3;
 
 	TDynamicVector<int> v2(size + 2);
 
-	v2[0] = 1; 
-	v2[1] = 2; 
-	v2[2] = 3; 
+	v2[0] = 1;
+	v2[1] = 2;
+	v2[2] = 3;
 	v2[3] = 4;
 	v2[4] = 5;
 
@@ -386,8 +398,8 @@ TEST(TDynamicVector, can_multiply_vectors_with_equal_size)
 
 	TDynamicVector<int> v2(size);
 
-	v2[0] = 1; 
-	v2[1] = 2; 
+	v2[0] = 1;
+	v2[1] = 2;
 	v2[2] = 3;
 
 	int res = 5 + 8 + 9;
@@ -402,17 +414,16 @@ TEST(TDynamicVector, cant_multiply_vectors_with_not_equal_size)
 	TDynamicVector<int> v1(size);
 
 	v1[0] = 5;
-	v1[1] = 4; 
+	v1[1] = 4;
 	v1[2] = 3;
 
 	TDynamicVector<int> v2(size + 2);
 
 	v2[0] = 1;
-	v2[1] = 2; 
-	v2[2] = 3; 
-	v2[3] = 4; 
+	v2[1] = 2;
+	v2[2] = 3;
+	v2[3] = 4;
 	v2[4] = 5;
 
 	ASSERT_ANY_THROW(v1 * v2);
 }
-
