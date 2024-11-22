@@ -5,27 +5,21 @@ template <typename T>
 class TestTDynamicVector : public ::testing::Test
 {
 public:
-	TDynamicVector<T>* v, * v1, * v2;
+	TDynamicVector<T>* v;
+	TDynamicVector<T>* v1;
+	TDynamicVector<T>* v2;
+
 	void SetUp()
 	{
 		v = new TDynamicVector<T>(10);
-	}
-	void SetUp2(std::size_t n)
-	{
-		v = new TDynamicVector<T>(n);
-	}
-	void SetUp3()
-	{
+
 		T* a = new T[10]{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
 		v1 = new TDynamicVector<T>(a, 10);
 
 		delete[] a;
 
-
-		v = new TDynamicVector<T>(*v1);
-
-
+	
 		T* b = new T[10]{ 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
 		v2 = new TDynamicVector<T>(b, 10);
@@ -36,9 +30,6 @@ public:
 	void TearDown()
 	{
 		delete v;
-	}
-	void TearDown3()
-	{
 		delete v1;
 		delete v2;
 	}
@@ -48,40 +39,32 @@ TYPED_TEST_CASE_P(TestTDynamicVector);
 
 TYPED_TEST_P(TestTDynamicVector, can_create_vector_with_positive_length)
 {
-	ASSERT_NO_THROW(this->SetUp2(10));
+	ASSERT_NO_THROW(TDynamicVector<TypeParam> temp(10));
 }
 
 TYPED_TEST_P(TestTDynamicVector, cant_create_too_large_vector)
 {
-	ASSERT_ANY_THROW(this->SetUp2(MAX_VECTOR_SIZE + 1));
+	ASSERT_ANY_THROW(TDynamicVector<TypeParam> temp(MAX_VECTOR_SIZE + 1));
 }
 
 TYPED_TEST_P(TestTDynamicVector, throws_when_create_vector_with_negative_length)
 {
-	ASSERT_ANY_THROW(this->SetUp2(-5));
+	ASSERT_ANY_THROW(TDynamicVector<TypeParam> temp(-5));
 }
 
 TYPED_TEST_P(TestTDynamicVector, can_create_copied_vector)
 {
-	ASSERT_NO_THROW(this->SetUp3());
+	ASSERT_NO_THROW(TDynamicVector<TypeParam>(*(this->v1)));
 }
 
 TYPED_TEST_P(TestTDynamicVector, copied_vector_is_equal_to_source_one)
 {
-	this->SetUp3();
-
-	EXPECT_EQ(*(this->v), *(this->v1));
-
-	this->TearDown3();
+	EXPECT_EQ(TDynamicVector<TypeParam>(*(this->v1)), *(this->v1));
 }
 
 TYPED_TEST_P(TestTDynamicVector, copied_vector_has_its_own_memory)
 {
-	this->SetUp3();
-
-	EXPECT_NE(this->v, this->v1);
-
-	this->TearDown3();
+	EXPECT_NE(&(TDynamicVector<TypeParam>(*(this->v1))), this->v1);
 }
 
 TYPED_TEST_P(TestTDynamicVector, can_get_size)
@@ -91,9 +74,9 @@ TYPED_TEST_P(TestTDynamicVector, can_get_size)
 
 TYPED_TEST_P(TestTDynamicVector, can_set_and_get_element)
 {
-	this->v[0][0] = 4;
+	(*this->v)[0] = 4;
 
-	EXPECT_EQ(4, (this->v[0][0]));
+	EXPECT_EQ(4, (*this->v)[0]);
 }
 
 TYPED_TEST_P(TestTDynamicVector, throws_when_set_element_with_negative_index)
@@ -115,13 +98,9 @@ TYPED_TEST_P(TestTDynamicVector, can_assign_vector_to_itself)
 
 TYPED_TEST_P(TestTDynamicVector, can_assign_vectors_of_equal_size)
 {
-	this->SetUp3();
-
 	*(this->v) = *(this->v2);
 
 	EXPECT_EQ(*(this->v), *(this->v2));
-
-	this->TearDown3();
 }
 
 
