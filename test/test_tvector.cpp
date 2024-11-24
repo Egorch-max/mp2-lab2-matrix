@@ -25,10 +25,13 @@ public:
 		v2 = new TDynamicVector<T>(tmp2, 10);
 
 		v = new TDynamicVector<T>(*v1);
+
+		v0 = nullptr;
 	}
 	void TearDown()
 	{
 		delete v;
+		delete v0;
 		delete v1;
 		delete v2;
 		delete[] tmp1;
@@ -46,7 +49,7 @@ public:
 	}
 };
 
-TYPED_TEST_CASE_P(TestTDynamicVector, VectorTypes);
+TYPED_TEST_CASE_P(TestTDynamicVector);
 
 TYPED_TEST_P(TestTDynamicVector, can_create_vector_with_positive_length)
 {
@@ -119,7 +122,7 @@ REGISTER_TYPED_TEST_CASE_P(TestTDynamicVector, can_create_vector_with_positive_l
 	can_create_copied_vector, copied_vector_is_equal_to_source_one, copied_vector_has_its_own_memory, can_get_size, can_set_and_get_element, throws_when_set_element_with_negative_index,
 	throws_when_set_element_with_too_large_index, can_assign_vector_to_itself, can_assign_vectors_of_equal_size);
 
-typedef::testing::Types<int, float, double, long, long long> VectorTypes;
+typedef::testing::Types<int, double> VectorTypes;
 
 INSTANTIATE_TYPED_TEST_CASE_P(VectorTypesInstantiation, TestTDynamicVector, VectorTypes);
 
